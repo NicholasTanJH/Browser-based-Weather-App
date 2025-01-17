@@ -1,2 +1,4 @@
 # Browser-based-Weather-App
-Retrieve and display the weather of a searched city
+Retrieve and display the weather of a searched city, and also the country flag accordingly
+
+Using HTML, CSS, and JavaScript, and many APIs
