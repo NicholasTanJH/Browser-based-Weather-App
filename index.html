@@ -1,0 +1,200 @@
+<!-- animation perhaps?  -->
+<!-- sfx, vfx? -->
+<!-- more info -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather app</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="card">
+        <div class="search">
+            <input id="search-bar" type="text" placeholder="Enter city name" spellcheck="false">
+            <button>
+                <img src="images/search.png">
+            </button>
+        </div>
+        <div class="weather">
+            <div class="main-details">
+                <div class="weather-icon-container">
+                    <img class="weather-icon" src="images/clouds.png">
+                </div>
+                <div class="temperature-container">
+                    <h1 class="temp">- -°c</h1>
+                </div>
+                <div id="city-country-container">
+                    <h2 class="city">- -</h2>
+                    <img id="country-icon" src="https://flagsapi.com/CA/flat/64.png">
+                </div>
+            </div>
+            <div class="main-details2">
+                <div class="details">
+                    <div class="col">
+                        <img src="images/humidity.png">
+                        <div>
+                            <p>Humidity</p>
+                            <p class="humidity">- - %</p>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <img src="images/wind.png">
+                        <div>
+                            <p>Wind Speed</p>
+                            <p class="wind">- - km/h</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="details">
+                    <div class="col">
+                        <img src="images/visibility.png">
+                        <div>
+                            <p>Visibility</p>
+                            <p class="visibility">- - %</p>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <img src="images/feelsLike.png">
+                        <div>
+                            <p>Feels Like</p>
+                            <p class="feels-like">- - °c</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+<script>
+    const API_KEY = "4de23d27e447ef562aceb3e21cd30407";
+    const API_URL = "https://api.openweathermap.org/data/2.5/weather?units=metric&q="
+    const DEF_CITY = "winnipeg"
+
+    const searchBox = document.querySelector(".search input");
+    const searchBtn = document.querySelector(".search button");
+    const weatherIcon = document.querySelector(".weather-icon");
+    const countryIcon = document.querySelector("#country-icon");
+    const card = document.querySelector(".card");
+
+    async function checkWeather(city) {
+        const response = await fetch(API_URL + city + `&appid=${API_KEY}`);
+
+        //unknown city, remove all the weather datas in UI
+        if (response.status == "404") {
+            document.querySelector(".city").innerHTML = "Unknown Location";
+            weatherIcon.src = "images/unknown_weather.png";
+            document.querySelector(".temp").innerHTML = "- - °c";
+            document.querySelector(".humidity").innerHTML = "- - %";
+            document.querySelector(".wind").innerHTML = "- - km/h";
+            document.querySelector(".visibility").innerHTML = "- - %";
+            document.querySelector(".feels-like").innerHTML = "- - °c";
+            countryIcon.style.display = "none";
+
+
+            fadeIn(0.03, "main-details", 0);
+            fadeIn(0.025, "main-details2", 0.15);
+            return;
+        } else {
+            countryIcon.style.display = "block";
+        }
+
+        var data = await response.json();
+
+        console.log(data);
+
+        //change weather infomations
+        document.querySelector(".city").innerHTML = data.name;
+        document.querySelector(".temp").innerHTML = Math.round(data.main.temp) + "°c";
+        document.querySelector(".humidity").innerHTML = data.main.humidity + "%";
+        document.querySelector(".wind").innerHTML = data.wind.speed + " km/h";
+        document.querySelector(".visibility").innerHTML = data.visibility / 100 + "%";
+        document.querySelector(".feels-like").innerHTML = Math.round(data.main.feels_like) + "°c";
+
+        //change weather icon
+        if (data.weather[0].main == "Clouds") {
+            weatherIcon.src = "images/clouds.png";
+        } else if (data.weather[0].main == "Clear") {
+            weatherIcon.src = "images/clear.png";
+        } else if (data.weather[0].main == "Rain") {
+            weatherIcon.src = "images/rain.png";
+        } else if (data.weather[0].main == "Drizzle") {
+            weatherIcon.src = "images/drizzle.png";
+        } else if (data.weather[0].main == "Mist") {
+            weatherIcon.src = "images/mist.png";
+        }
+
+        //change country icon, using api from https://flagsapi.com
+        const countryCode = data.sys.country;
+        if (typeof countryCode !== "undefined"){
+            console.log(countryCode);
+            countryIcon.src = "https://flagsapi.com/" + countryCode + "/flat/64.png";
+        }else{
+            countryIcon.style.display = "none";
+        }
+
+        if(false)
+            console.log("w");
+
+        //change color according to temperature
+        if (data.main.temp < 0) {
+            card.style.background = 'linear-gradient(150deg, #00b4d8, #03045e)';
+        } else if (data.main.temp < 10) {
+            card.style.background = 'linear-gradient(150deg, #ade8f4, #0077b6)';
+        } else if (data.main.temp < 20) {
+            card.style.background = 'linear-gradient(150deg, #90e0ef, #00b4d8)';
+        } else if (data.main.temp < 25) {
+            card.style.background = 'linear-gradient(150deg, #caf0f8, #48cae4)';
+        } else if (data.main.temp < 30) {
+            card.style.background = 'linear-gradient(150deg, #cabb54, #fcbf49)';
+        } else if (data.main.temp < 35) {
+            card.style.background = 'linear-gradient(150deg, #ff9f1c, #f77f00)';
+        } else {
+            card.style.background = 'linear-gradient(150deg, #ff4800, #d62828)';
+        }
+
+
+        //fade in animation execute on every city search
+        function fadeIn(rate, _element, delay) {
+            const element = document.querySelector("." + _element);
+            let opacity = 0;
+
+            function increaseOpacity() {
+                opacity += rate; // Increase opacity by 0.02 each frame
+                if (opacity <= 1) {
+                    element.style.opacity = opacity.toString();
+                    requestAnimationFrame(increaseOpacity);
+                }
+            }
+
+            element.style.opacity = "0";
+            setTimeout(increaseOpacity, delay * 1000);
+        }
+
+        fadeIn(0.03, "main-details", 0);
+        fadeIn(0.025, "main-details2", 0.15);
+
+        //clear search input
+        searchBox.value = "";
+    }
+
+    checkWeather(DEF_CITY);
+
+    searchBtn.addEventListener("click", () => {
+        checkWeather(searchBox.value);
+    })
+
+    document.getElementById('search-bar').addEventListener('keydown', function (event) {
+        if (event.key === 'Enter') {
+            if (searchBox.value != "")
+                checkWeather(searchBox.value);
+        }
+    });
+
+</script>
+
+</html>
